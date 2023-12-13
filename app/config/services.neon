@@ -1,0 +1,4 @@
+services:
+    - App\services\ConfigService(%parameters%)
+
+    router: App\Router\RouterFactory::createRouter

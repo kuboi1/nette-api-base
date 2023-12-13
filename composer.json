@@ -1,0 +1,36 @@
+{
+  "name": "kuboi/nette_api_project",
+  "description": "A backend Rest API using the Nette PHP library",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "kuboi",
+      "email": "jakub.zednik17@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.2",
+    "nette/application": "^3.1",
+    "nette/bootstrap": "^3.2",
+    "nette/caching": "^3.2",
+    "nette/database": "^3.1",
+    "nette/utils": "^4.0",
+    "tracy/tracy": "^2.10",
+    "nette/schema": "^1.2",
+    "nette/http": "^3.2",
+    "ext-json": "*",
+    "nette/routing": "^3.0",
+    "nette/neon": "^3.4"
+  },
+  "autoload": {
+    "classmap": [
+      "app/Bootstrap.php"
+    ]
+  },
+  "config": {
+    "platform": {
+      "php": "8.2"
+    }
+  }
+}

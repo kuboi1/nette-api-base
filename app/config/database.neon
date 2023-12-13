@@ -1,0 +1,4 @@
+database:
+	dsn: 'mysql:host=localhost;dbname=nette-api'
+	user: root
+	password:

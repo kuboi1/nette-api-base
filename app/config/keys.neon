@@ -1,0 +1,4 @@
+parameters:
+    keys:
+        api:
+            masterKey: 'Put your master key here'

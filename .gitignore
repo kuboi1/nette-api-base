@@ -1,0 +1,4 @@
+.idea
+vendor
+app/config/database.local.neon
+app/config/keys.local.neon

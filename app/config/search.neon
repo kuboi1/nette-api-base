@@ -1,0 +1,12 @@
+search:
+    model:
+        in: %appDir%/model
+        classes:
+            - *Repository
+            - *Factory
+
+    service:
+        in: %appDir%/services
+        classes:
+            - *Service
+            - *Storage

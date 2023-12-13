@@ -1,0 +1,13 @@
+includes:
+    - services.neon
+    - database.neon
+    - database.local.neon
+    - keys.neon
+    - keys.local.neon
+    - search.neon
+
+application:
+	errorPresenter: Error
+	#catchExceptions: true
+	mapping:
+		*: App\Modules\*\Presenters\*Presenter
