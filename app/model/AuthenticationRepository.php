@@ -3,7 +3,6 @@
 namespace App\Model;
 
 use App\Model\Base\Repository;
-use Nette\Database\Explorer;
 
 class AuthenticationRepository extends Repository
 {
@@ -16,13 +15,6 @@ class AuthenticationRepository extends Repository
 
         PARAM_API_ID = 'apiId',
         PARAM_API_KEY = 'apiKey';
-
-    public function __construct(Explorer $database)
-    {
-        parent::__construct($database);
-
-        self::$table = self::TABLE;
-    }
 
     public function isValidAuth(string $code, string $apiKey, string $ip): bool
     {

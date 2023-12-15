@@ -9,9 +9,9 @@ use Nette\Database\Table\Selection;
 abstract class Repository implements IRepository
 {
     public const
-        COL_ID = 'id';
+        TABLE = 'table',
 
-    public static string $table;
+        COL_ID = 'id';
 
     public function __construct(
         private readonly Explorer $database
@@ -20,7 +20,7 @@ abstract class Repository implements IRepository
 
     public function findAll(): Selection
     {
-        return $this->database->table(self::$table);
+        return $this->database->table(static::TABLE);
     }
 
     /**
