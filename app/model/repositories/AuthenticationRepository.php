@@ -18,8 +18,9 @@ class AuthenticationRepository extends Repository
         COL_API_KEY = 'api_key',
         COL_IP = 'ip',
 
-        PARAM_API_ID = 'apiId',
-        PARAM_API_KEY = 'apiKey';
+        PARAM_AUTH = 'auth',
+        PARAM_AUTH_API_ID = 'apiId',
+        PARAM_AUTH_API_KEY = 'apiKey';
 
     protected function mapToDataType(ActiveRow $row): Authentication
     {

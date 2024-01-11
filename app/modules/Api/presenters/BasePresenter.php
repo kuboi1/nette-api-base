@@ -4,8 +4,9 @@ namespace App\Modules\Api\Presenters;
 
 use App\ApiModule\Responses\BadRequestResponse;
 use App\ApiModule\Responses\ForbiddenRequestResponse;
-use App\model\AuthenticationRepository;
+use App\Model\Repositories\AuthenticationRepository;
 use App\services\ConfigService;
+use JetBrains\PhpStorm\NoReturn;
 use Nette\Application\AbortException;
 use Nette\Application\BadRequestException;
 use Nette\Application\ForbiddenRequestException;
@@ -14,19 +15,25 @@ use Nette\Application\UI\Presenter;
 class BasePresenter extends Presenter
 {
     protected string $baseUrl;
+    protected \stdClass $jsonData;
 
-    public function __construct(
-        private AuthenticationRepository $authenticationRepository,
-        private ConfigService $configService
-    )
+    private readonly AuthenticationRepository $authenticationRepository;
+    private readonly ConfigService $configService;
+
+    public function injectRepository(
+        AuthenticationRepository $authenticationRepository,
+        ConfigService $configService
+    ): void
     {
-        parent::__construct();
+        $this->authenticationRepository = $authenticationRepository;
+        $this->configService = $configService;
     }
 
     protected function startup()
     {
         parent::startup();
         $this->baseUrl = substr($this->getHttpRequest()->getUrl()->getBaseUrl(), 0, -1);
+        $this->jsonData = $this->getJsonData();
 
         // Allow from any origin
         if (isset($_SERVER['HTTP_ORIGIN'])) {
@@ -39,17 +46,9 @@ class BasePresenter extends Presenter
     /**
      * @throws AbortException
      */
-    public function actionDefault(): void
+    #[NoReturn] public function actionDefault(string $locale): void
     {
-        try {
-            $this->authenticateRequest();
-
-            $this->sendJson($this->getHttpRequest()->getRemoteAddress());
-        } catch (ForbiddenRequestException $e) {
-            $this->sendResponse(new ForbiddenRequestResponse($e->getMessage()));
-        } catch (BadRequestException $e) {
-            $this->sendResponse(new BadRequestResponse($e->getMessage()));
-        }
+        $this->sendResponse(new BadRequestResponse('No api request specified'));
     }
 
     /**
@@ -57,8 +56,8 @@ class BasePresenter extends Presenter
      */
     protected function authenticateRequest(): bool
     {
-        $apiId = $this->getRequest()->getParameter(AuthenticationRepository::PARAM_API_ID);
-        $apiKey = $this->getRequest()->getParameter(AuthenticationRepository::PARAM_API_KEY);
+        $apiId = $this->jsonData->{AuthenticationRepository::PARAM_AUTH}->{AuthenticationRepository::PARAM_AUTH_API_ID} ?? null;
+        $apiKey = $this->jsonData->{AuthenticationRepository::PARAM_AUTH}->{AuthenticationRepository::PARAM_AUTH_API_KEY} ?? null;
 
         // No API key param
         if (!$apiKey) {
@@ -83,5 +82,14 @@ class BasePresenter extends Presenter
         }
 
         throw new ForbiddenRequestException('Authentication failed');
+    }
+
+    private function getJsonData(): \stdClass
+    {
+        if ($this->getHttpRequest()->getRawBody()) {
+            return json_decode($this->getHttpRequest()->getRawBody());
+        } else {
+            return json_decode('{}');
+        }
     }
 }
