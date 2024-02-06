@@ -17,7 +17,7 @@ final class RouterFactory
 
         // API Routes
         $router->withModule('Api')
-            ->addRoute('api/<presenter>[/<action>][/<id>]', 'Base:default');
+            ->addRoute('[<locale=en en|cs>/]<presenter>[/<action>][/<id>]', 'Base:default');
 
         return $router;
     }
