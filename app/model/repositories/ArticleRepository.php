@@ -12,7 +12,7 @@ use Nette\Database\Table\ActiveRow;
  */
 class ArticleRepository extends LocalizedRepository
 {
-    public const
+    public const string
         TABLE = 'article',
         TABLE_TRANSLATION = 'article_translation',
 

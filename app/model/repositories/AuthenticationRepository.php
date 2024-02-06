@@ -11,7 +11,7 @@ use Nette\Database\Table\ActiveRow;
  */
 class AuthenticationRepository extends Repository
 {
-    public const
+    public const string
         TABLE = 'authentication',
 
         COL_CODE = 'code',

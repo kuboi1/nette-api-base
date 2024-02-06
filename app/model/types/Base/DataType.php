@@ -3,7 +3,6 @@
 namespace App\Model\Types\Base;
 
 use Nette\Database\Table\ActiveRow;
-use Nette\Utils\DateTime;
 
 /**
  * @template T
@@ -11,15 +10,21 @@ use Nette\Utils\DateTime;
 abstract class DataType
 {
     public int $id;
-    public DateTime $dateCreated;
-    public DateTime $dateUpdated;
 
-    public function __construct(ActiveRow $row)
+    public function __construct(ActiveRow|array $row)
     {
-        foreach ($row->toArray() as $key => $value) {
+        foreach ((is_array($row) ? $row : $row->toArray()) as $key => $value) {
+            $key = $this->camelize($key);
             if (property_exists($this, $key)) {
                 $this->{$key} = $value;
             }
         }
+    }
+
+    private function camelize(string $string): string
+    {
+        return lcfirst(
+            str_replace(' ', '', ucwords(str_replace('_', ' ', $string)))
+        );
     }
 }
