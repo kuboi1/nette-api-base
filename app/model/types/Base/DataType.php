@@ -9,8 +9,6 @@ use Nette\Database\Table\ActiveRow;
  */
 abstract class DataType
 {
-    public int $id;
-
     public function __construct(ActiveRow|array $row)
     {
         foreach ((is_array($row) ? $row : $row->toArray()) as $key => $value) {

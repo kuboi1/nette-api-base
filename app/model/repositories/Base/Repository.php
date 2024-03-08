@@ -12,12 +12,16 @@ use Nette\Database\Table\Selection;
  */
 abstract class Repository implements IRepository
 {
-    public const
+    public const string
         TABLE = 'table',
 
         COL_ID = 'id',
         COL_DATE_CREATED = 'date_created',
-        COL_DATE_UPDATED = 'date_updated';
+        COL_DATE_UPDATED = 'date_updated',
+
+        JSON_DATA = 'data',
+        JSON_DATA_ROWS = 'rows',
+        JSON_DATA_TRANSLATIONS = 'translations';
 
     public function __construct(
         protected readonly Explorer $database
@@ -28,7 +32,12 @@ abstract class Repository implements IRepository
 
     public function selectAll(): Selection
     {
-        return $this->database->table(static::TABLE);
+        return $this->selectTable(static::TABLE);
+    }
+
+    public function selectTable(string $table): Selection
+    {
+        return $this->database->table($table);
     }
 
     /**
@@ -39,28 +48,42 @@ abstract class Repository implements IRepository
         return $this->selectAll()->fetchAll();
     }
 
-    public function selectById(int $id): Selection
+    public function selectByPrimary(int|string $primaryKey): Selection
     {
-        return $this->selectAll()->where(self::COL_ID, $id);
+        return $this->selectAll()->where(self::COL_ID, $primaryKey);
     }
 
-    public function fetchById(int $id): ActiveRow|null
+    public function fetchByPrimary(int|string $primaryKey): ActiveRow|null
     {
-        return $this->selectById($id)->fetch();
+        return $this->selectByPrimary($primaryKey)->fetch();
     }
 
-    public function upsert(array $values): ActiveRow|int
+    public function upsert(array $values, int|string|null $primaryKey = null): ActiveRow|int
     {
-        if ($values[self::COL_ID]) {
-            return $this->selectById($values[self::COL_ID])->update($values);
+        if ($primaryKey) {
+            return $this->selectByPrimary($primaryKey)->update($values);
         } else {
             return $this->selectAll()->insert($values);
         }
     }
 
-    public function delete(int $id): void
+    public function delete(int|string $primaryKey): void
     {
-        $this->selectById($id)->delete();
+        $this->selectByPrimary($primaryKey)->delete();
+    }
+
+    /**
+     * @return T|null
+     */
+    public function getByPrimary(int|string $primaryKey, ?string $locale = null)
+    {
+        $row = $this->fetchByPrimary($primaryKey);
+
+        if (!$row) {
+            return null;
+        }
+
+        return $this->mapToDataType($row);
     }
 
     /**

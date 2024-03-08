@@ -4,8 +4,6 @@ namespace App\Model\Repositories\Base;
 
 use App\Model\ModelUtils;
 use App\Model\Types\Base\DataType;
-use App\Model\Utils;
-use App\Services\LocaleService;
 use Nette\Database\Explorer;
 use Nette\Database\Table\ActiveRow;
 use Nette\Database\Table\Selection;
@@ -23,7 +21,7 @@ abstract class LocalizedRepository extends Repository
         COL_TRANSLATION_PARENT_ID = 'parent_id',
         COL_TRANSLATION_LOCALE = 'locale';
 
-    protected static array $translationCols;
+    protected const array TRANSLATION_COLUMNS = [];
 
     public function __construct(
         protected readonly Explorer $database
@@ -42,7 +40,7 @@ abstract class LocalizedRepository extends Repository
         return $this->selectTableWithTranslation(
             static::TABLE,
             static::TABLE_TRANSLATION,
-            static::$translationCols,
+            static::TRANSLATION_COLUMNS,
             $locale
         );
     }
@@ -103,20 +101,20 @@ abstract class LocalizedRepository extends Repository
         return $row;
     }
 
-    #[\Override] public function delete(int $id): void
+    #[\Override] public function delete(int|string $primaryKey): void
     {
         $this->selectAllTranslations()->delete();
 
-        parent::delete($id);
+        parent::delete($primaryKey);
     }
 
     /**
      * @return T|null
      */
-    #[\Override] public function getById(int $id, ?string $locale = null)
+    #[\Override] public function getByPrimary(int|string $primaryKey, ?string $locale = null)
     {
         $row = $this->selectAllWithTranslations($locale ?? self::DEFAULT_LOCALE)
-            ->wherePrimary($id)
+            ->wherePrimary($primaryKey)
             ->fetch();
 
         if (!$row) {

@@ -10,8 +10,8 @@ interface IRepository
     public function selectAll(): Selection;
     /** @return ActiveRow[] */
     public function fetchAll(): array;
-    public function selectById(int $id): Selection;
-    public function fetchById(int $id): ActiveRow|null;
+    public function selectByPrimary(int $primaryKey): Selection;
+    public function fetchByPrimary(int $primaryKey): ActiveRow|null;
     public function upsert(array $values): ActiveRow|int;
-    public function delete(int $id): void;
+    public function delete(int $primaryKey): void;
 }

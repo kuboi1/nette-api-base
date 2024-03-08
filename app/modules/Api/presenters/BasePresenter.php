@@ -5,6 +5,8 @@ namespace App\Modules\Api\Presenters;
 use App\ApiModule\Responses\BadRequestResponse;
 use App\ApiModule\Responses\ForbiddenRequestResponse;
 use App\Model\Repositories\AuthenticationRepository;
+use App\Model\Repositories\Base\LocalizedRepository;
+use App\Model\Repositories\Base\Repository;
 use App\services\ConfigService;
 use JetBrains\PhpStorm\NoReturn;
 use Nette\Application\AbortException;
@@ -14,6 +16,9 @@ use Nette\Application\UI\Presenter;
 
 class BasePresenter extends Presenter
 {
+    protected Repository|LocalizedRepository $repository;
+    protected bool $isLocalized;
+
     protected string $baseUrl;
     protected \stdClass $jsonData;
 
@@ -82,6 +87,81 @@ class BasePresenter extends Presenter
         }
 
         throw new ForbiddenRequestException('Authentication failed');
+    }
+
+    /**
+     * @throws AbortException
+     */
+    protected function getAllAction(string $locale): void
+    {
+        try {
+            $this->authenticateRequest();
+
+            $this->sendJson($this->repository->getAll($locale));
+        } catch (ForbiddenRequestException $e) {
+            $this->sendResponse(new ForbiddenRequestResponse($e->getMessage()));
+        } catch (BadRequestException $e) {
+            $this->sendResponse(new BadRequestResponse($e->getMessage()));
+        }
+    }
+
+    /**
+     * @throws AbortException
+     */
+    protected function upsertAction(): void
+    {
+        try {
+            $this->authenticateRequest();
+
+            if ($this->isLocalized) {
+                $this->upsertLocalized();
+            } else {
+                $this->upsert();
+            }
+        } catch (ForbiddenRequestException $e) {
+            $this->sendResponse(new ForbiddenRequestResponse($e->getMessage()));
+        } catch (BadRequestException $e) {
+            $this->sendResponse(new BadRequestResponse($e->getMessage()));
+        }
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    private function upsert(): void
+    {
+        $rows = $this->jsonData->{Repository::JSON_DATA}->{Repository::JSON_DATA_ROWS} ?? null;
+
+        if (!$rows) {
+            throw new BadRequestException('Missing upsert data');
+        }
+
+        // Upsert rows
+        foreach ($rows as $row) {
+            $this->repository->upsert($row);
+        }
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    private function upsertLocalized(): void
+    {
+        $rows = $this->jsonData->{Repository::JSON_DATA}->{Repository::JSON_DATA_ROWS} ?? null;
+        $translations = $this->jsonData->{Repository::JSON_DATA}->{Repository::JSON_DATA_TRANSLATIONS} ?? null;
+
+        if (!$rows && !$translations) {
+            throw new BadRequestException('Missing upsert data');
+        }
+
+        // Upsert rows
+        foreach ($rows as $row) {
+            if ($translations && isset($translations[$row[Repository::COL_ID]])) {
+                $this->repository->upsertWithTranslations($row, $translations[$row[Repository::COL_ID]]);
+            } else {
+                $this->repository->upsert($row);
+            }
+        }
     }
 
     private function getJsonData(): \stdClass
